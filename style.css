@@ -53,7 +53,7 @@ div {
 }
 
 .overflow_container {
-  max-height: 25em;
+  max-height: 16em;
   overflow: scroll;
 }
 

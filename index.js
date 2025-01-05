@@ -249,6 +249,7 @@ class client_application {
 	async display_hwks() {
 		const homeworks = await this.get_hwks();
 		const panel = document.getElementById("hw_container");
+        panel.innerHTML = ""
 		this.homeworks = homeworks.homework;
 		this.homeworks.reverse();
 		console.log(homeworks);
@@ -329,7 +330,7 @@ class client_application {
 
 			})(task_id++));
 		}
-        asyncPool(funcs, 5)
+        asyncPool(funcs, 5).then(()=>{this.display_hwks()});
 	}
 
 	async get_display_translations() {
