@@ -301,7 +301,7 @@ class client_application {
 			".task > input[type=checkbox]:checked",
 		);
 		const logs = document.getElementById("log_container");
-		logs.innerHTML += `doing ${checkboxes.length} tasks...<br>`;
+		logs.innerHTML = `doing ${checkboxes.length} tasks...<br>`;
         const progress_bar = document.getElementById("hw_bar");
 		let task_id = 1;
         let progress = 0;
@@ -319,9 +319,10 @@ class client_application {
 				const answers = await task_doer.get_data();
 				logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
 				logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
-				const result = await task_doer.send_answers(answers);
                 progress += 1
                 progress_bar.style.width = `${String(progress / checkboxes.length * 0.5 * 100)}%`;
+
+				const result = await task_doer.send_answers(answers);
 				logs.innerHTML += `<b>task ${id} done, scored ${result.score}</b>`;
 				logs.innerHTML += `<div class="json_small">${JSON.stringify(result)}</div>`;
 				logs.scrollTop = logs.scrollHeight;
