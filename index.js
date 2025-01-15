@@ -1,3 +1,26 @@
+speed = 10000;
+document.getElementById("settings_button").addEventListener("click", () => {
+	document.getElementById("settings").showModal();
+});
+speed_input = document.getElementById("speed_slider");
+speed_input.oninput = function () {
+	console.log("change", this);
+	speed = 10 ** this.value;
+	console.log(speed, this.value);
+	document.getElementById("speed_display").innerText = secondsToString(speed)
+};
+
+function secondsToString(seconds) {
+	const numyears = Math.floor(seconds / 31536000);
+	const numdays = Math.floor((seconds % 31536000) / 86400);
+	const numhours = Math.floor(((seconds % 31536000) % 86400) / 3600);
+	const numminutes = Math.floor((((seconds % 31536000) % 86400) % 3600) / 60);
+	const numseconds = (((seconds % 31536000) % 86400) % 3600) % 60;
+	return (
+		`${numyears} years ${numdays} days ${numhours} hours ${numminutes} minutes ${numseconds} seconds`
+	);
+}
+
 function set_checkboxes(node, state) {
 	console.log(node);
 	const container = document.getElementById(node);
@@ -7,22 +30,23 @@ function set_checkboxes(node, state) {
 }
 
 // from https://gist.github.com/jzohrab/a6701d0087edca8303ec069826ec4b14
-async function asyncPool (array, poolSize) {
-  const result = []
-  const pool = []
+async function asyncPool(array, poolSize) {
+	const result = [];
+	const pool = [];
 
-  // Promises leave the pool when they're resolved.
-  function leavePool (e) { pool.splice(pool.indexOf(e), 1) }
+	// Promises leave the pool when they're resolved.
+	function leavePool(e) {
+		pool.splice(pool.indexOf(e), 1);
+	}
 
-  for (const item of array) {
-    const p = Promise.resolve(item())
-    result.push(p)
-    const e = p.then(() => leavePool(e))
-    pool.push(e)
-    if (pool.length >= poolSize)
-      await Promise.race(pool)
-  }
-  return Promise.all(result)
+	for (const item of array) {
+		const p = Promise.resolve(item());
+		result.push(p);
+		const e = p.then(() => leavePool(e));
+		pool.push(e);
+		if (pool.length >= poolSize) await Promise.race(pool);
+	}
+	return Promise.all(result);
 }
 
 class task_completer {
@@ -83,7 +107,7 @@ class task_completer {
 			isExam: this.mode === "exam",
 			correctStudentAns: "",
 			incorrectStudentAns: "",
-			timeStamp: 1,
+			timeStamp: Math.floor(speed + (Math.random() - 0.5) / 10 * speed),
 			vocabNumber: vocabs.length,
 			rel_module_uid: this.task.rel_module_uid,
 			dontStoreStats: true,
@@ -249,7 +273,7 @@ class client_application {
 	async display_hwks() {
 		const homeworks = await this.get_hwks();
 		const panel = document.getElementById("hw_container");
-        panel.innerHTML = ""
+		panel.innerHTML = "";
 		this.homeworks = homeworks.homework;
 		this.homeworks.reverse();
 		console.log(homeworks);
@@ -302,11 +326,11 @@ class client_application {
 		);
 		const logs = document.getElementById("log_container");
 		logs.innerHTML = `doing ${checkboxes.length} tasks...<br>`;
-        const progress_bar = document.getElementById("hw_bar");
+		const progress_bar = document.getElementById("hw_bar");
 		let task_id = 1;
-        let progress = 0;
-        progress_bar.style.width = "0%";
-        const funcs = []
+		let progress = 0;
+		progress_bar.style.width = "0%";
+		const funcs = [];
 		for (const c of checkboxes) {
 			const parts = c.id.split("-");
 			const task = this.homeworks[parts[0]].tasks[parts[1]];
@@ -315,23 +339,26 @@ class client_application {
 				task,
 				this.homeworks[parts[0]].languageCode,
 			);
-			funcs.push (x=>(async (id) => {
-				const answers = await task_doer.get_data();
-				logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
-				logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
-                progress += 1
-                progress_bar.style.width = `${String(progress / checkboxes.length * 0.5 * 100)}%`;
+			funcs.push((x) =>
+				(async (id) => {
+					const answers = await task_doer.get_data();
+					logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
+					logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
+					progress += 1;
+					progress_bar.style.width = `${String((progress / checkboxes.length) * 0.5 * 100)}%`;
 
-				const result = await task_doer.send_answers(answers);
-				logs.innerHTML += `<b>task ${id} done, scored ${result.score}</b>`;
-				logs.innerHTML += `<div class="json_small">${JSON.stringify(result)}</div>`;
-				logs.scrollTop = logs.scrollHeight;
-                progress += 1;
-                progress_bar.style.width = `${String(progress / checkboxes.length * 0.5 * 100)}%`;
-
-			})(task_id++));
+					const result = await task_doer.send_answers(answers);
+					logs.innerHTML += `<b>task ${id} done, scored ${result.score}</b>`;
+					logs.innerHTML += `<div class="json_small">${JSON.stringify(result)}</div>`;
+					logs.scrollTop = logs.scrollHeight;
+					progress += 1;
+					progress_bar.style.width = `${String((progress / checkboxes.length) * 0.5 * 100)}%`;
+				})(task_id++),
+			);
 		}
-        asyncPool(funcs, 5).then(()=>{this.display_hwks()});
+		asyncPool(funcs, 5).then(() => {
+			this.display_hwks();
+		});
 	}
 
 	async get_display_translations() {

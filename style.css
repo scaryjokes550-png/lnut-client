@@ -8,7 +8,7 @@
 
 
 
-html {
+body {
     font-family: "ComicSansMS", cursive;
 }
 
@@ -26,6 +26,14 @@ body {
 div {
   padding: 1em;
 }
+
+.settings_button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1rem;
+}
+
 
 .progress_bar {
   padding: 0px;

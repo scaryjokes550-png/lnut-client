@@ -8,8 +8,8 @@
     <body>
         <img src="./languagenut.jpeg" width='30%'>
         <div id="login" class="overlay">
-            <input class="login_field" id="username_input" type="text">
-            <input class="login_field"id="password_input" type="text">
+            <input class="login_field" id="username_input" type="text" placeholder="username">
+            <input class="login_field" id="password_input" type="text" placeholder="password">
             <button class="login_field"id="login_btn"> Log In </button>
         </div>
         <div id="hw_panel" class="overlay">
@@ -28,7 +28,16 @@
 
             </div>
         </div>
+        <dialog id="settings">
+            [Esc] to exit
+            <br>
+            Select the time you want your homework to appear to be done in:
+            <input type="range" min="-3" max="18" value="2" id="speed_slider" step="0.1">
+            <br/>
+            Current speed: <span id="speed_display"></span> 
 
+        </dialog>
+        <button id="settings_button" class="settings_button">Settings</button>
         <script src="index.js"></script>
     </body>
 </html>
