@@ -107,7 +107,7 @@ class task_completer {
 			isExam: this.mode === "exam",
 			correctStudentAns: "",
 			incorrectStudentAns: "",
-			timeStamp: Math.floor(speed + (Math.random() - 0.5) / 10 * speed),
+			timeStamp: Math.floor(speed + (Math.random() - 0.5) / 10 * speed) * 1000,
 			vocabNumber: vocabs.length,
 			rel_module_uid: this.task.rel_module_uid,
 			dontStoreStats: true,
