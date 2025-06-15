@@ -1,21 +1,19 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Space+Mono&display=swap');
-@font-face{
-
-  font-family: "ComicSansMS";
-  src: url("./comic-sans.woff"), format('woff'),
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue&display=swap');
 
 
 body {
-    font-family: "ComicSansMS", cursive;
-}
-
-body {
+    font-family: "Comic Sans MS", "Comic Sans", "Comic Neue", cursive;
+    font-weight: 700;
+    font-size: 1.05rem;
     background-image: url("./hellfire.gif");
     background-repeat: no-repeat;
     background-size: 100%;
+}
+
+button {
+    font-family: inherit;
 }
 
 
