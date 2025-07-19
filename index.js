@@ -81,6 +81,10 @@ class task_completer {
     }
     async send_answers(vocabs) {
         console.log(vocabs);
+        if (vocabs === undefined || vocabs.length === 0) {
+            console.log("No vocabs found, skipping sending answers.");
+            return;  // Stop the function if no vocabs are found
+        }
         const data = {
             moduleUid: this.catalog_uid,
             gameUid: this.game_uid,
@@ -114,6 +118,7 @@ class task_completer {
             product: "secondary",
             token: this.token,
         };
+        console.log(data)
         const response = await this.call_lnut(
             "gameDataController/addGameScore",
             data,
@@ -283,10 +288,19 @@ class client_application {
         this.homeworks = homeworks.homework;
         this.homeworks.reverse();
         console.log(homeworks);
+        
+        const selbutton = document.getElementById("selectall")
+        selbutton.onclick = function select_checkbox() {
+            
+                let selallcheckbox = document.getElementsByName('boxcheck');
+                for(var checkbox in selallcheckbox)
+                    selallcheckbox[checkbox].checked = this.checked;
+        };
         let hw_idx = 0;
         for (const homework of this.homeworks) {
             const hw_checkbox = document.createElement("input");
             hw_checkbox.type = "checkbox";
+            hw_checkbox.name = "boxcheck"
             hw_checkbox.onclick = function () {
                 set_checkboxes(
                     this.parentNode.nextElementSibling.id,
@@ -305,6 +319,7 @@ class client_application {
             for (const task of homework.tasks) {
                 const task_checkbox = document.createElement("input");
                 task_checkbox.type = "checkbox";
+                task_checkbox.name = "boxcheck";
                 task_checkbox.id = `${hw_idx}-${idx}`;
 
                 const task_display = document.createElement("label");
@@ -353,11 +368,15 @@ class client_application {
             funcs.push((x) =>
                 (async (id) => {
                     const answers = await task_doer.get_data();
+                    if (answers === undefined || answers.length === 0) {
+                        console.log("No answers found, skipping sending answers.");
+                        return;  // Stop the function if no answers are found
+                    }
                     logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
                     logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
                     progress += 1;
                     progress_bar.style.width = `${String((progress / checkboxes.length) * 0.5 * 100)}%`;
-
+                    console.log("Calling send_answers with answers:", answers);
                     const result = await task_doer.send_answers(answers);
                     logs.innerHTML += `<b>task ${id} done, scored ${result.score}</b>`;
                     logs.innerHTML += `<div class="json_small">${JSON.stringify(result)}</div>`;
