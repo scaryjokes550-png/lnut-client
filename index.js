@@ -83,7 +83,7 @@ class task_completer {
         console.log(vocabs);
         if (vocabs === undefined || vocabs.length === 0) {
             console.log("No vocabs found, skipping sending answers.");
-            return;  // Stop the function if no vocabs are found
+            return; // Stop the function if no vocabs are found
         }
         const data = {
             moduleUid: this.catalog_uid,
@@ -118,7 +118,7 @@ class task_completer {
             product: "secondary",
             token: this.token,
         };
-        console.log(data)
+        console.log(data);
         const response = await this.call_lnut(
             "gameDataController/addGameScore",
             data,
@@ -288,62 +288,72 @@ class client_application {
         this.homeworks = homeworks.homework;
         this.homeworks.reverse();
         console.log(homeworks);
-        
-        const selbutton = document.getElementById("selectall")
+
+        const selbutton = document.getElementById("selectall");
         selbutton.onclick = function select_checkbox() {
-            
-                let selallcheckbox = document.getElementsByName('boxcheck');
-                for(var checkbox in selallcheckbox)
-                    selallcheckbox[checkbox].checked = this.checked;
+            const selallcheckbox = document.getElementsByName("boxcheck");
+            for (const checkbox of selallcheckbox)
+                checkbox.checked = this.checked;
         };
         let hw_idx = 0;
         for (const homework of this.homeworks) {
-            const hw_checkbox = document.createElement("input");
-            hw_checkbox.type = "checkbox";
-            hw_checkbox.name = "boxcheck"
-            hw_checkbox.onclick = function () {
-                set_checkboxes(
-                    this.parentNode.nextElementSibling.id,
-                    this.checked,
-                );
-            };
-            const hw_name = document.createElement("span");
-            hw_name.innerText = `${homework.name}`;
-            hw_name.style.display = "block";
-
-            hw_name.prepend(hw_checkbox);
-
-            const hw_display = document.createElement("div");
-            hw_display.id = `hw${homework.id}`;
-            let idx = 0;
-            for (const task of homework.tasks) {
-                const task_checkbox = document.createElement("input");
-                task_checkbox.type = "checkbox";
-                task_checkbox.name = "boxcheck";
-                task_checkbox.id = `${hw_idx}-${idx}`;
-
-                const task_display = document.createElement("label");
-                task_display.for = task_checkbox.id;
-                const percentage = task.gameResults
-                    ? task.gameResults.percentage
-                    : "-";
-                task_display.innerHTML = `${this.display_translations[task.translation]} - ${this.get_task_name(task)} (${percentage}%)`;
-
-                const task_span = document.createElement("span");
-
-                task_span.classList.add("task");
-
-                task_span.appendChild(task_checkbox);
-                task_span.appendChild(task_display);
-                task_span.appendChild(document.createElement("br"));
-
-                hw_display.appendChild(task_span);
-                idx++;
-            }
+            const { hw_name, hw_display } =
+                this.create_homework_elements(homework, hw_idx);
             panel.appendChild(hw_name);
             panel.appendChild(hw_display);
+
             hw_idx++;
         }
+    }
+    create_homework_elements(homework, hw_idx) {
+        const hw_checkbox = document.createElement("input");
+        hw_checkbox.type = "checkbox";
+        hw_checkbox.name = "boxcheck";
+        hw_checkbox.onclick = function () {
+            set_checkboxes(this.parentNode.nextElementSibling.id, this.checked);
+        };
+        const hw_name = document.createElement("span");
+        hw_name.innerText = `${homework.name}`;
+        hw_name.style.display = "block";
+
+        hw_name.prepend(hw_checkbox);
+
+        const hw_display = document.createElement("div");
+        hw_display.id = `hw${homework.id}`;
+        let idx = 0;
+        for (const task of homework.tasks) {
+            const { task_span, task_checkbox, task_display } =
+                this.create_task_elements(task, hw_idx, idx);
+            task_span.appendChild(task_checkbox);
+            task_span.appendChild(task_display);
+            task_span.appendChild(document.createElement("br"));
+
+            hw_display.appendChild(task_span);
+            idx++;
+        }
+
+        return { hw_name: hw_name, hw_display: hw_display };
+    }
+    create_task_elements(task, hw_idx, idx) {
+        const task_checkbox = document.createElement("input");
+        task_checkbox.type = "checkbox";
+        task_checkbox.name = "boxcheck";
+        task_checkbox.id = `${hw_idx}-${idx}`;
+
+        const task_display = document.createElement("label");
+        task_display.for = task_checkbox.id;
+        const percentage = task.gameResults ? task.gameResults.percentage : "-";
+        task_display.innerHTML = `${this.display_translations[task.translation]} - ${this.get_task_name(task)} (${percentage}%)`;
+
+        const task_span = document.createElement("span");
+
+        task_span.classList.add("task");
+
+        return {
+            task_span: task_span,
+            task_checkbox: task_checkbox,
+            task_display: task_display,
+        };
     }
 
     async do_hwks() {
@@ -369,8 +379,10 @@ class client_application {
                 (async (id) => {
                     const answers = await task_doer.get_data();
                     if (answers === undefined || answers.length === 0) {
-                        console.log("No answers found, skipping sending answers.");
-                        return;  // Stop the function if no answers are found
+                        console.log(
+                            "No answers found, skipping sending answers.",
+                        );
+                        return; // Stop the function if no answers are found
                     }
                     logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
                     logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
