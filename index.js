@@ -1,3 +1,13 @@
+// Ensure GIF loads, fallback if broken
+const logoImg = document.getElementById("logo_img");
+if (logoImg) {
+    logoImg.src = "274c5a39ef61277d5f1344490c24e9df.gif";
+    logoImg.onerror = function () {
+        this.src = "";
+        this.alt = "Image not found";
+    };
+}
+
 speed = 10000;
 document.getElementById("settings_button").addEventListener("click", () => {
     document.getElementById("settings").showModal();
@@ -32,7 +42,6 @@ async function asyncPool(array, poolSize) {
     const result = [];
     const pool = [];
 
-    // Promises leave the pool when they're resolved.
     function leavePool(e) {
         pool.splice(pool.indexOf(e), 1);
     }
@@ -45,6 +54,15 @@ async function asyncPool(array, poolSize) {
         if (pool.length >= poolSize) await Promise.race(pool);
     }
     return Promise.all(result);
+}
+
+// Utility to generate random percentages (average ~50%)
+function getRandomPercentages(n) {
+    let arr = Array.from({length: n}, () => Math.random());
+    let currentAvg = arr.reduce((a, b) => a + b, 0) / n;
+    let scale = 0.5 / currentAvg;
+    let scaled = arr.map(x => Math.min(1, Math.max(0, x * scale)));
+    return scaled.map(x => Math.round(x * 100));
 }
 
 class task_completer {
@@ -83,7 +101,7 @@ class task_completer {
         console.log(vocabs);
         if (vocabs === undefined || vocabs.length === 0) {
             console.log("No vocabs found, skipping sending answers.");
-            return; // Stop the function if no vocabs are found
+            return;
         }
         const data = {
             moduleUid: this.catalog_uid,
@@ -102,16 +120,13 @@ class task_completer {
             verbUid: this.mode === "verbs" ? this.catalog_uid : "",
             phonicUid: this.mode === "phonics" ? this.catalog_uid : "",
             sentenceScreenUid: this.mode === "sentence" ? 100 : "",
-
-            sentenceCatalogUid:
-                this.mode === "sentence" ? this.catalog_uid : "",
+            sentenceCatalogUid: this.mode === "sentence" ? this.catalog_uid : "",
             grammarCatalogUid: this.catalog_uid,
             isGrammar: false,
             isExam: this.mode === "exam",
             correctStudentAns: "",
             incorrectStudentAns: "",
-            timeStamp:
-                Math.floor(speed + ((Math.random() - 0.5) / 10) * speed) * 1000,
+            timeStamp: Math.floor(speed + ((Math.random() - 0.5) / 10) * speed) * 1000,
             vocabNumber: vocabs.length,
             rel_module_uid: this.task.rel_module_uid,
             dontStoreStats: true,
@@ -219,7 +234,7 @@ class client_application {
     hide_all() {
         const divsToHide = document.getElementsByClassName("overlay");
         for (let i = 0; i < divsToHide.length; i++) {
-            divsToHide[i].style.visibility = "hidden"; // or
+            divsToHide[i].style.visibility = "hidden";
         }
     }
 
@@ -297,6 +312,12 @@ class client_application {
         };
         let hw_idx = 0;
         for (const homework of this.homeworks) {
+            // Randomize percentages for this homework's tasks
+            let nTasks = homework.tasks.length;
+            let percentages = getRandomPercentages(nTasks);
+            for (let i = 0; i < nTasks; i++) {
+                homework.tasks[i].randomPercentage = percentages[i];
+            }
             const { hw_name, hw_display } =
                 this.create_homework_elements(homework, hw_idx);
             panel.appendChild(hw_name);
@@ -342,7 +363,8 @@ class client_application {
 
         const task_display = document.createElement("label");
         task_display.for = task_checkbox.id;
-        const percentage = task.gameResults ? task.gameResults.percentage : "-";
+        // Use random percentage
+        const percentage = typeof task.randomPercentage === 'number' ? task.randomPercentage : "-";
         task_display.innerHTML = `${this.display_translations[task.translation]} - ${this.get_task_name(task)} (${percentage}%)`;
 
         const task_span = document.createElement("span");
@@ -382,7 +404,7 @@ class client_application {
                         console.log(
                             "No answers found, skipping sending answers.",
                         );
-                        return; // Stop the function if no answers are found
+                        return;
                     }
                     logs.innerHTML += `<b>fetched vocabs for task ${id}</b>`;
                     logs.innerHTML += `<div class="json_small">${JSON.stringify(answers)}</div>`;
